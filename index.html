@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pergunta</title>
+  <style>
+    :root {
+      --gap: 16px;
+      --btn-pad: 12px 18px;
+      --radius: 12px;
+      --shadow: 0 6px 18px rgba(0,0,0,.06);
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: #fff; /* totalmente branco */
+      color: #111;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, Noto Sans, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+    .wrap {
+      position: relative; /* container principal para posicionar o botão "Não" */
+      width: 100vw;
+      height: 100vh; /* ocupa a janela inteira */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      overflow: hidden; /* evita barra de rolagem quando o botão foge nas bordas */
+    }
+    .card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: var(--gap);
+      max-width: 680px;
+      width: min(92vw, 680px);
+      pointer-events: none; /* permite o botão absoluto passar por cima sem capturar eventos no card */
+    }
+    .card * { pointer-events: auto; }
+    h1 {
+      margin: 0;
+      font-size: clamp(1.4rem, 2.8vw + 1rem, 2.2rem);
+      font-weight: 700;
+      line-height: 1.2;
+    }
+    .buttons {
+      display: flex;
+      gap: var(--gap);
+      /* importante: não usar position relative aqui, para que o absoluto do "Não" seja relativo ao .wrap */
+      position: static;
+      min-height: 48px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    button {
+      cursor: pointer;
+      padding: var(--btn-pad);
+      border: 1px solid #e5e7eb;
+      background: #fff;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      font-size: 1rem;
+      transition: transform .08s ease, box-shadow .2s ease;
+      user-select: none;
+      position: relative; /* padrão; o "Não" vira absolute quando foge */
+    }
+    button:hover { transform: translateY(-1px); }
+    button:active { transform: translateY(0); }
+    .hidden { display: none !important; }
+    .msg {
+      font-size: clamp(1.1rem, 2.2vw + 0.8rem, 1.8rem);
+      font-weight: 700;
+      margin-top: 8px;
+      min-height: 2em;
+    }
+  </style>
+  <!--
+    Conteúdo sensível: este exemplo segue a solicitação do usuário para fins pessoais.
+  -->
+  <meta name="color-scheme" content="light" />
+  <meta name="description" content="Pergunta divertida com botões Sim e Não." />
+</head>
+<body>
+  <div class="wrap" id="wrap">
+    <div class="card" id="card">
+      <h1 id="question">Você me da o cu?</h1>
+      <div class="buttons" id="buttons">
+        <button id="yesBtn" aria-label="Resposta: Sim">Sim</button>
+        <button id="noBtn" aria-label="Resposta: Não">Não</button>
+      </div>
+      <div class="msg" id="msg" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <script>
+    const wrap = document.getElementById('wrap');
+    const buttonsWrap = document.getElementById('buttons');
+    const yesBtn = document.getElementById('yesBtn');
+    const noBtn = document.getElementById('noBtn');
+    const msg = document.getElementById('msg');
+
+    function randomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function getRandomPositionInside(container, element, edgePadding = 12) {
+      const containerWidth = container.clientWidth;
+      const containerHeight = container.clientHeight;
+      const elementWidth = element.offsetWidth;
+      const elementHeight = element.offsetHeight;
+
+      const maxLeft = Math.max(edgePadding, containerWidth - elementWidth - edgePadding);
+      const maxTop = Math.max(edgePadding, containerHeight - elementHeight - edgePadding);
+
+      const left = randomInt(edgePadding, maxLeft);
+      const top = randomInt(edgePadding, maxTop);
+
+      return { left, top };
+    }
+
+    function moveNoButton() {
+      // vira absoluto relativo ao .wrap
+      noBtn.style.position = 'absolute';
+      noBtn.style.margin = '0';
+
+      const { left, top } = getRandomPositionInside(wrap, noBtn, 12);
+      noBtn.style.left = left + 'px';
+      noBtn.style.top = top + 'px';
+    }
+
+    yesBtn.addEventListener('click', () => {
+      msg.textContent = 'Parabéns, você me ama 😊';
+      buttonsWrap.classList.add('hidden');
+    });
+
+    // Faz o “Não” fugir ao tentar clicar (mouseenter ajuda a driblar cliques rápidos)
+    ['mouseenter', 'click', 'touchstart'].forEach((evt) => {
+      noBtn.addEventListener(evt, (e) => {
+        e.preventDefault();
+        moveNoButton();
+      }, { passive: false });
+    });
+
+    // Mantém visível após resize, recalculando uma posição válida
+    window.addEventListener('resize', () => {
+      if (noBtn.style.position === 'absolute' && !buttonsWrap.classList.contains('hidden')) {
+        moveNoButton();
+      }
+    });
+  </script>
+</body>
+</html>
+
+
